@@ -248,14 +248,14 @@ public:
 	
 	explicit np_array(size_type size)
 		: m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
-					ndim, std::vector<size_t>(ndim, size), strides))
+					s_ndim, std::vector<size_t>(s_ndim, size), s_strides))
 	{
 		update_buffer_info();
 	}
 
 	np_array(size_type size, const_reference val)
 		: m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
-			ndim, std::vector<size_t>(ndim, size), strides))
+			s_ndim, std::vector<size_t>(s_ndim, size), s_strides))
 	{
 		std::fill(get_buffer(), get_buffer() + size, val);
 	}
@@ -327,6 +327,13 @@ public:
 	bool empty() const { return size() == 0; }
 	size_type size() const { return m_buffer_info.size; }
 
+	void resize(size_type size) { resize_impl(size); }
+	void resize(size_type size, const_reference value)
+	{
+		resize_impl(size);
+		std::fill(get_buffer(), get_buffer() + size, value);
+	}
+
 	reference operator[](size_type i) { return get_buffer()[i]; }
 	const_reference operator[](size_type i) const { return get_buffer()[i]; }
 
@@ -367,15 +374,22 @@ private:
 		m_buffer_info = m_wrappee.request();
 	}
 
+	void resize_impl(size_type size)
+	{
+		m_wrappee = std::move(wrappee_type(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+										   s_ndim, std::vector<size_t>(s_ndim, size), s_strides)));
+		update_buffer_info();
+	}
+
 	wrappee_type m_wrappee;
 	buffer_info m_buffer_info;
 
-	static constexpr int ndim = 1;
-	static const std::vector<size_t> strides;
+	static constexpr int s_ndim = 1;
+	static const std::vector<size_t> s_strides;
 };
 
 template <class T>
-const std::vector<size_t> np_array<T>::strides = { sizeof(T) };
+const std::vector<size_t> np_array<T>::s_strides = { sizeof(T) };
 
 NAMESPACE_END(pybind11)
 
