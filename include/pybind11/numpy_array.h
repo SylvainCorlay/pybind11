@@ -297,7 +297,7 @@ public:
 	}
 
 	np_array(np_array&& rhs)
-		: m_wrappee(rhs.m_wrappee)
+		: m_wrappee(std::move(rhs.m_wrappee))
 	{
 		update_buffer_info();
 	}
@@ -306,10 +306,22 @@ public:
 	{
 		if (this = !&rhs)
 		{
-			m_wrappee = rhs.m_wrappee;
+			m_wrappee = std::move(rhs.m_wrappee);
 			update_buffer_info();
 		}
 		return *this;
+	}
+
+	np_array& operator=(wrappee_type&& wrappee)
+	{
+		m_wrappee = std::move(wrappee);
+		update_buffer_info();
+		return *this;
+	}
+
+	wrappee_type get_wrappee() const
+	{
+		return m_wrappee;
 	}
 
 	bool empty() const { return size() == 0; }
@@ -351,6 +363,7 @@ private:
 
 	void update_buffer_info()
 	{
+		// TODO: consider adding move operation to buffer_info
 		m_buffer_info = m_wrappee.request();
 	}
 
