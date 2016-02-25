@@ -283,7 +283,7 @@ public:
 	{
 		if (this != &rhs)
 		{
-			m_wrappee = rhs > m_wrappee;
+			m_wrappee = rhs.m_wrappee;
 			update_buffer_info();
 		}
 		return *this;
