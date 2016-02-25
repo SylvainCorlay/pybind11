@@ -283,7 +283,7 @@ public:
 	{
 		if (this != &rhs)
 		{
-			m_wrappee = rhs.m_wrappee;
+			m_wrappee = unconstify(rhs.m_wrappee);
 			update_buffer_info();
 		}
 		return *this;
@@ -291,7 +291,7 @@ public:
 
 	np_array& operator=(const wrappee_type& wrappee)
 	{
-		m_wrappee = wrappee;
+		m_wrappee = unconstify(wrappee);
 		update_buffer_info();
 		return *this;
 	}
@@ -362,6 +362,13 @@ public:
 	const_reverse_iterator crend() const noexcept { return rend(); }
 
 private:
+
+    // This is required because of inc_ref called on rhs
+    // in pybind object::operator=
+    wrappee_type& unconstify(const wrappee_type& rhs)
+    {
+        return const_cast<wrappee_type&>(rhs);
+    }
 
 	pointer get_buffer() const
 	{
