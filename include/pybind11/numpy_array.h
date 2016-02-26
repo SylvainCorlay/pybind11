@@ -325,7 +325,7 @@ public:
 	}
 
 	bool empty() const { return size() == 0; }
-	size_type size() const { return m_buffer_info.size; }
+	size_type size() const { return m_size; }
 
 	void resize(size_type size) { resize_impl(size); }
 	void resize(size_type size, const_reference value)
@@ -372,13 +372,15 @@ private:
 
 	pointer get_buffer() const
 	{
-		return reinterpret_cast<pointer>(m_buffer_info.ptr);
+        return p_buffer;
 	}
 
 	void update_buffer_info()
 	{
 		// TODO: consider adding move operation to buffer_info
-		m_buffer_info = m_wrappee.request();
+		buffer_info info = m_wrappee.request();
+        p_buffer = reinterpret_cast<pointer>(info.ptr);
+        m_size = info.size;
 	}
 
 	void resize_impl(size_type size)
@@ -389,7 +391,13 @@ private:
 	}
 
 	wrappee_type m_wrappee;
-	buffer_info m_buffer_info;
+    pointer p_buffer;
+    size_t m_size;
+    // Assigning a buffer_info is a wrong idea because the lack of assignment
+    // operator in buffer_info can lead to two call to PyBuffer_Release with
+    // the same view. Moreover, we don't need to store all the data of
+    // buffer_info here
+	//buffer_info m_buffer_info;
 
 	static constexpr int s_ndim = 1;
 	static const std::vector<size_t> s_strides;
