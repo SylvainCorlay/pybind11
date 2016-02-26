@@ -244,7 +244,7 @@ public:
 	using reverse_iterator = std::reverse_iterator<iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-	np_array() noexcept: m_wrappee(), m_buffer_info() {}
+	np_array() noexcept: m_wrappee(), p_buffer(nullptr), m_size(0) {}
 	
 	explicit np_array(size_type size)
 		: m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
