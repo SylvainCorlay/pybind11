@@ -337,7 +337,7 @@ public:
 	reference operator[](size_type i) { return get_buffer()[i]; }
 	const_reference operator[](size_type i) const { return get_buffer()[i]; }
 
-	reference front() { return get_buger()[0]; }
+	reference front() { return get_buffer()[0]; }
 	const_reference front() const { return get_buffer()[0]; }
 
 	reference back() { return get_buffer()[size() - 1]; }
