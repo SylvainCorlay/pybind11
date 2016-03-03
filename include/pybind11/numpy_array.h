@@ -385,9 +385,12 @@ private:
 
 	void resize_impl(size_type size)
 	{
-		m_wrappee = std::move(wrappee_type(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
-										   s_ndim, std::vector<size_t>(s_ndim, size), s_strides)));
-		update_buffer_info();
+        if (size != m_size)
+        {
+            m_wrappee = std::move(wrappee_type(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+                                               s_ndim, std::vector<size_t>(s_ndim, size), s_strides)));
+            update_buffer_info();
+        }
 	}
 
 	wrappee_type m_wrappee;
