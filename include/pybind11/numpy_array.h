@@ -257,6 +257,7 @@ public:
 		: m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
 			s_ndim, std::vector<size_t>(s_ndim, size), s_strides))
 	{
+        update_buffer_info();
 		std::fill(get_buffer(), get_buffer() + size, val);
 	}
 
@@ -365,7 +366,7 @@ private:
 
     // This is required because of inc_ref called on rhs
     // in pybind object::operator=
-    wrappee_type& unconstify(const wrappee_type& rhs)
+    wrappee_type& unconstify(const wrappee_type& rhs) const
     {
         return const_cast<wrappee_type&>(rhs);
     }
@@ -395,7 +396,7 @@ private:
 
 	wrappee_type m_wrappee;
     pointer p_buffer;
-    size_t m_size;
+    size_type m_size;
     // Assigning a buffer_info is a wrong idea because the lack of assignment
     // operator in buffer_info can lead to two call to PyBuffer_Release with
     // the same view. Moreover, we don't need to store all the data of
@@ -408,6 +409,158 @@ private:
 
 template <class T>
 const std::vector<size_t> np_array<T>::s_strides = { sizeof(T) };
+
+template <class T>
+class np_array_2d
+{
+
+public:
+
+    using wrappee_type = array_t<T>;
+    using base_type = np_array_base_type<T>;
+    using value_type = typename base_type::value_type;
+    using reference = typename base_type::reference;
+    using const_reference = typename base_type::const_reference;
+    using pointer = typename base_type::pointer;
+    using const_pointer = typename base_type::const_pointer;
+    using size_type = typename base_type::size_type;
+    using difference_type = typename base_type::difference_type;
+
+    // No iterators provided yet
+
+    np_array_2d() noexcept: m_wrappee(), p_buffer(nullptr), m_xsize(0), m_ysize(0) {}
+
+    explicit np_array_2d(size_type xsize, size_type ysize)
+        : m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+            s_ndim, std::vector<size_t>({ xsize, ysize }),
+            std::vector<size_t>({ ysize * sizeof(T), sizeof(T) })))
+    {
+        update_buffer_info();
+    }
+
+    np_array_2d(size_type xsize, size_type ysize, const_reference val)
+        : m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+            s_ndim, std::vector<size_t>({ xsize, ysize }),
+            std::vector<size_t>({ ysize * sizeof(T), sizeof(T) })))
+    {
+        update_buffer_info()
+        std::fill(get_buffer(), get_buffer() + m_xsize * m_ysize, val);
+    }
+
+    np_array_2d(const wrappee_type& wrappee)
+        : m_wrappee(wrappee)
+    {
+        update_buffer_info();
+    }
+
+    np_array_2d(const np_array_2d& rhs)
+        : m_wrappee(rhs.m_wrappee)
+    {
+        update_buffer_info();
+    }
+
+    np_array_2d& operator=(const np_array_2d& rhs)
+    {
+        if (this != &rhs)
+        {
+            m_wrappee = unconstify(rhs.m_wrappee);
+            update_buffer_info();
+        }
+        return *this;
+    }
+
+    np_array_2d& operator=(const wrappee_type& wrappee)
+    {
+        m_wrappee = unconstify(wrappee);
+        update_buffer_info();
+        return *this;
+    }
+
+    np_array_2d(np_array_2d&& rhs)
+        : m_wrappee(std::move(rhs.m_wrappee))
+    {
+        update_buffer_info();
+    }
+
+    np_array_2d& operator=(np_array_2d&& rhs)
+    {
+        if (this = !&rhs)
+        {
+            m_wrappee = std::move(rhs.m_wrappee);
+            update_buffer_info();
+        }
+        return *this;
+    }
+
+    np_array_2d& operator=(wrappee_type&& wrappee)
+    {
+        m_wrappee = std::move(wrappee);
+        update_buffer_info();
+        return *this;
+    }
+
+    wrappee_type get_wrappee() const
+    {
+        return m_wrappee;
+    }
+
+    bool empty() const { return xsize() * ysize() == 0; }
+    size_type xsize() const { return m_xsize; }
+    size_type ysize() const { return m_ysize; }
+
+    void resize(size_type xsize, size_type ysize) { resize_impl(xsize, ysize); }
+    void resize(size_type xsize, size_type ysize, const_reference value)
+    {
+        resize_impl(xsize, ysize);
+        std::fill(get_buffer(), get_buffer() + m_size * m_ysize, value);
+    }
+
+    reference operator()(size_type i, size_type j) { return get_buffer()[get_address(i,j)]; }
+    const_reference operator()(size_type i, size_type j) const { return get_buffer()[get_adress(i,j)]; }
+
+private:
+
+    wrappee_type& unconstify(const wrappee_type& rhs) const
+    {
+        return const_cast<wrappee_type&>(rhs);
+    }
+
+    pointer get_buffer() const
+    {
+        return p_buffer;
+    }
+
+    void update_buffer_info()
+    {
+        buffer_info info = m_wrappee.request();
+        p_buffer = reinterpret_cast<pointer>(info.ptr);
+        m_xsize = info.shape[0];
+        m_ysize = info.shape[1];
+    }
+
+    void resize_impl(size_type xsize, size_type ysize)
+    {
+        if (xsize != m_xsize || ysize != m_ysize)
+        {
+            m_wrappee = std::move(wrappee_type(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+                                               s_ndim, std::vector<size_t>({ xsize, ysize }),
+                                               std::vector<size_t>({ysize * sizeof(T), sizeof(T)}))));
+            update_buffer_info();
+        }
+    }
+
+    inline size_type get_address(size_type i, size_type j) const
+    {
+        return i*m_ysize + j;
+    }
+
+    wrappee_type m_wrappee;
+    pointer p_buffer;
+    size_type m_xsize;
+    size_type m_ysize;
+
+    static constexpr int s_ndim = 2;
+};
 
 NAMESPACE_END(pybind11)
 
