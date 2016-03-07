@@ -504,15 +504,15 @@ public:
         return m_wrappee;
     }
 
-    bool empty() const { return xsize() * ysize() == 0; }
-    size_type xsize() const { return m_xsize; }
-    size_type ysize() const { return m_ysize; }
+    bool empty() const { return nb_row() * nb_col() == 0; }
+    size_type nb_row() const { return m_nb_row; }
+    size_type nb_col() const { return m_nb_col; }
 
-    void resize(size_type xsize, size_type ysize) { resize_impl(xsize, ysize); }
-    void resize(size_type xsize, size_type ysize, const_reference value)
+    void resize(size_type nb_row, size_type nb_col) { resize_impl(nb_row, nb_col); }
+    void resize(size_type nb_row, size_type nb_col, const_reference value)
     {
-        resize_impl(xsize, ysize);
-        std::fill(get_buffer(), get_buffer() + m_size * m_ysize, value);
+        resize_impl(nb_row, nb_col);
+        std::fill(get_buffer(), get_buffer() + m_nb_row * m_nb_col, value);
     }
 
     reference operator()(size_type i, size_type j) { return get_buffer()[get_address(i,j)]; }
@@ -534,30 +534,30 @@ private:
     {
         buffer_info info = m_wrappee.request();
         p_buffer = reinterpret_cast<pointer>(info.ptr);
-        m_xsize = info.shape[0];
-        m_ysize = info.shape[1];
+        m_nb_row = info.shape[0];
+        m_nb_col = info.shape[1];
     }
 
-    void resize_impl(size_type xsize, size_type ysize)
+    void resize_impl(size_type nb_row, size_type nb_col)
     {
-        if (xsize != m_xsize || ysize != m_ysize)
+        if (nb_row != m_nb_row || nb_col != m_nb_col)
         {
             m_wrappee = std::move(wrappee_type(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
-                                               s_ndim, std::vector<size_t>({ xsize, ysize }),
-                                               std::vector<size_t>({ysize * sizeof(T), sizeof(T)}))));
+                                               s_ndim, std::vector<size_t>({ nb_row, nb_col }),
+                                               std::vector<size_t>({nb_col * sizeof(T), sizeof(T)}))));
             update_buffer_info();
         }
     }
 
     inline size_type get_address(size_type i, size_type j) const
     {
-        return i*m_ysize + j;
+        return i*m_nb_col + j;
     }
 
     wrappee_type m_wrappee;
     pointer p_buffer;
-    size_type m_xsize;
-    size_type m_ysize;
+    size_type m_nb_row;
+    size_type m_nb_col;
 
     static constexpr int s_ndim = 2;
 };
