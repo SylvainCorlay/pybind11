@@ -428,7 +428,7 @@ public:
 
     // No iterators provided yet
 
-    np_array_2d() noexcept: m_wrappee(), p_buffer(nullptr), m_xsize(0), m_ysize(0) {}
+    np_array_2d() noexcept: m_wrappee(), p_buffer(nullptr), m_nb_row(0), m_nb_col(0) {}
 
     explicit np_array_2d(size_type xsize, size_type ysize)
         : m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
@@ -444,7 +444,7 @@ public:
             std::vector<size_t>({ ysize * sizeof(T), sizeof(T) })))
     {
         update_buffer_info()
-        std::fill(get_buffer(), get_buffer() + m_xsize * m_ysize, val);
+        std::fill(get_buffer(), get_buffer() + m_nb_row * m_nb_col, val);
     }
 
     np_array_2d(const wrappee_type& wrappee)
