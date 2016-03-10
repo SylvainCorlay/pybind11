@@ -443,7 +443,7 @@ public:
             s_ndim, std::vector<size_t>({ xsize, ysize }),
             std::vector<size_t>({ ysize * sizeof(T), sizeof(T) })))
     {
-        update_buffer_info()
+        update_buffer_info();
         std::fill(get_buffer(), get_buffer() + m_nb_row * m_nb_col, val);
     }
 
