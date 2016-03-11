@@ -102,7 +102,7 @@ public:
 
 	bool operator>=(const derived_iterator& rhs) const
 	{
-		return !(down_cast <rhs);
+		return !(down_cast() <rhs);
 	}
 
 	bool operator>(const derived_iterator& rhs) const
@@ -305,7 +305,7 @@ public:
 
 	np_array& operator=(np_array&& rhs)
 	{
-		if (this = !&rhs)
+		if (this != &rhs)
 		{
 			m_wrappee = std::move(rhs.m_wrappee);
 			update_buffer_info();
@@ -484,7 +484,7 @@ public:
 
     np_array_2d& operator=(np_array_2d&& rhs)
     {
-        if (this = !&rhs)
+        if (this != &rhs)
         {
             m_wrappee = std::move(rhs.m_wrappee);
             update_buffer_info();
