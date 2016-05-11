@@ -247,14 +247,14 @@ public:
 	np_array() noexcept: m_wrappee(), p_buffer(nullptr), m_size(0) {}
 	
 	explicit np_array(size_type size)
-		: m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+		: m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value,
 					s_ndim, std::vector<size_t>(s_ndim, size), s_strides))
 	{
 		update_buffer_info();
 	}
 
 	np_array(size_type size, const_reference val)
-		: m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+		: m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value,
 			s_ndim, std::vector<size_t>(s_ndim, size), s_strides))
 	{
         update_buffer_info();
@@ -388,7 +388,7 @@ private:
 	{
         if (size != m_size)
         {
-            m_wrappee = std::move(wrappee_type(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+            m_wrappee = std::move(wrappee_type(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value,
                                                s_ndim, std::vector<size_t>(s_ndim, size), s_strides)));
             update_buffer_info();
         }
@@ -431,7 +431,7 @@ public:
     np_array_2d() noexcept: m_wrappee(), p_buffer(nullptr), m_nb_row(0), m_nb_col(0) {}
 
     explicit np_array_2d(size_type xsize, size_type ysize)
-        : m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+        : m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value,
             s_ndim, std::vector<size_t>({ xsize, ysize }),
             std::vector<size_t>({ ysize * sizeof(T), sizeof(T) })))
     {
@@ -439,7 +439,7 @@ public:
     }
 
     np_array_2d(size_type xsize, size_type ysize, const_reference val)
-        : m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+        : m_wrappee(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value,
             s_ndim, std::vector<size_t>({ xsize, ysize }),
             std::vector<size_t>({ ysize * sizeof(T), sizeof(T) })))
     {
@@ -542,7 +542,7 @@ private:
     {
         if (nb_row != m_nb_row || nb_col != m_nb_col)
         {
-            m_wrappee = std::move(wrappee_type(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value(),
+            m_wrappee = std::move(wrappee_type(buffer_info(nullptr, sizeof(T), format_descriptor<T>::value,
                                                s_ndim, std::vector<size_t>({ nb_row, nb_col }),
                                                std::vector<size_t>({nb_col * sizeof(T), sizeof(T)}))));
             update_buffer_info();
