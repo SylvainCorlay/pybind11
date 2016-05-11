@@ -379,9 +379,17 @@ private:
 	void update_buffer_info()
 	{
 		// TODO: consider adding move operation to buffer_info
-		buffer_info info = m_wrappee.request();
-        p_buffer = reinterpret_cast<pointer>(info.ptr);
-        m_size = info.size;
+        if (m_wrappee.ptr() != nullptr)
+        {
+            buffer_info info = m_wrappee.request();
+            p_buffer = reinterpret_cast<pointer>(info.ptr);
+            m_size = info.size;
+        }
+        else
+        {
+            p_buffer = nullptr;
+            m_size = 0;
+        }
 	}
 
 	void resize_impl(size_type size)
@@ -532,10 +540,19 @@ private:
 
     void update_buffer_info()
     {
-        buffer_info info = m_wrappee.request();
-        p_buffer = reinterpret_cast<pointer>(info.ptr);
-        m_nb_row = info.shape[0];
-        m_nb_col = info.shape[1];
+        if (m_wrappee.ptr() != nullptr)
+        {
+            buffer_info info = m_wrappee.request();
+            p_buffer = reinterpret_cast<pointer>(info.ptr);
+            m_nb_row = info.shape[0];
+            m_nb_col = info.shape[1];
+        }
+        else
+        {
+            p_buffer = nullptr;
+            m_nb_row = 0;
+            m_nb_col = 0;
+        }
     }
 
     void resize_impl(size_type nb_row, size_type nb_col)
