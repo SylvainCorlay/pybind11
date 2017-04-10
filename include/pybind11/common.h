@@ -376,7 +376,10 @@ template<size_t ...S> struct make_index_sequence_impl <0, S...> { typedef index_
 template<size_t N> using make_index_sequence = typename make_index_sequence_impl<N>::type;
 #endif
 
-#if defined(PYBIND11_CPP17) || defined(_MSC_VER)
+#if defined(PYBIND11_CPP17)
+using std::bool_constant;
+using std::negation;
+#elif defined(_MSC_VER) && (_MSC_FULL_VER >= 190024210)
 using std::bool_constant;
 using std::negation;
 #else
@@ -388,7 +391,7 @@ template <class T> using negation = bool_constant<!T::value>;
 #ifdef PYBIND11_CPP17
 template <class... Ts> using all_of = bool_constant<(Ts::value && ...)>;
 template <class... Ts> using any_of = bool_constant<(Ts::value || ...)>;
-#elif !defined(_MSC_VER)
+#elif !defined(_MSC_VER) || (defined(_MSC_VER) && _MSC_FULL_VER < 190024210)
 template <bool...> struct bools {};
 template <class... Ts> using all_of = std::is_same<
     bools<Ts::value..., true>,
